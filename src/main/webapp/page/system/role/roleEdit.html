@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>角色编辑</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+    <script type="text/javascript" src="../../../js/boot.js"></script>
+    <script type="text/javascript" src="../../../js/config.js"></script>
+ </link>
+ </head>
+ <body>   
+<div style="padding-left:11px;padding-bottom:5px;">
+    <div id="editform" class="form" >
+        <input class="mini-hidden" name="id"/>
+        <table style="width:100%;">
+            <tr>
+               <td class="form-label" style="width: 150px;">角色名:<span
+					style="color: red">*</span></td>
+				<td style="width: 350px"><input name="name" id="name"
+					class="mini-textbox" style="width: 200px" required="true" /></td>
+              </tr>
+           
+            <tr>
+                 <td class="form-label" style="width: 150px;">状态:</td>
+				 <td style="width: 350px"><input name='status' id="status" class="mini-combobox"  style="width: 120px;" 
+				 onenter="onKeyEnter"  textField="text" valueField="id" allowInput="false" required="true"/></td>
+            </tr>
+            
+            <tr>
+                 <td class="form-label" style="width: 150px;">角色类型:</td>
+				 <td style="width: 350px">
+				 <input name='type' id="type" class="mini-combobox"  style="width: 120px;" 
+				 textField="text"  valueField="id" allowInput="false" required="true"/></td>
+            </tr>    
+            
+            <tr>
+                 <td class="form-label" style="width: 150px;">描述:</td>
+				 <td style="width: 350px">
+				 <input name="description" id="description" class="mini-textarea"  style="width:400px;height:100px;" required="false" /></td>
+            </tr>  
+       
+            <tr>
+                <td></td>
+                <td align="left" colspan='1'>
+                
+                    <a class="mini-button" id="submit" onclick="update()" style="width:60px;margin-right:20px;" >提交</a>
+               
+                    <a class="mini-button" id="cancel" onclick="onCancel" style="width:60px;">取消</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    mini.parse();
+    var params = mini.getParams();
+    var id=params.id;
+    var isAdminText = [{id:"1",text:"是"},{id:"2",text:"否"}];
+    var statusText = [{id:"1",text:"正常"},{id:"2",text:"锁定"}];
+    mini.get('status').setData(statusText);
+    mini.get('status').setValue("1");
+    var typeText = [{id:"1",text:"一审"},{id:"2",text:"二审"},{id:"3",text:"三审"},{id:"4",text:"其他"}];
+    mini.get('type').setData(typeText);
+    
+    $(document).ready(function(){
+        var form = new mini.Form("#editform");
+        form.clear();
+        var  url="/role/roleDetail?id="+id;
+            ajaxFunc('post',url,id,function(result){
+				if(result.code=="0"){
+					  var o = mini.decode(result.info);
+		                form.setData(o);
+         	}else{
+         		alert("加载失败，原因"+result.msg);
+         	}
+         });
+           
+        
+      });
+    
+    function update(){
+        var form = new mini.Form("#editform");
+        var o = form.getData();
+         if(check(o))
+            return;
+        form.validate();
+        if (form.isValid() == false) return;
+
+        var json = mini.encode([o]);
+        var url = "/role/roleEdit";
+        ajaxFunc('post',url,o,function(result){
+				if(result.code=="0"){
+         		 alert("提交成功");
+         		 reloadGrid(window.parent.mini.get("mainTabs1"));
+         	      CloseWindow("save");
+         	}else{
+         		alert("提交失败，原因"+result.msg);
+         	}
+         });
+    }
+    function check(e){
+        var  name=e.name;
+        if(name!=null&&name.length<1||name.length>50){
+               alert("用户名格式错误");
+               return true;
+            }
+       
+         return false;   
+ 
+
+        }
+    function onCancel(e) {
+            CloseWindow("cancel");
+    }
+    function CloseWindow(action) {            
+        if (action == "close" && form.isChanged()) {
+            if (confirm("数据被修改了，是否先提交？")) {
+                return false;
+            }
+        }
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();            
+    }
+
+</script>
+</body>
+</html>

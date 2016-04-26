@@ -1,0 +1,624 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>用户编辑</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+    <script type="text/javascript" src="../../../js/boot.js"></script>
+    <script type="text/javascript" src="../../../js/config.js"></script>
+ </link>
+ </head>
+ <body>   
+<div style="padding-left:11px;padding-bottom:5px;">
+    <div id="editform" class="form" >
+        <input class="mini-hidden" name="id"/>
+	        <div style="float: left; width: 45%; height: 90%">
+	        <table style="width:100%; border-bottom:
+	         0px;">
+	            <tr>
+	                <td class="form-label" style="width: 150px;" >登录名(5-25位):<span style="color: red">*</span></td>
+					<td style="width: 350px"><input name="loginName" id="loginName" class="mini-textbox" style="width: 200px" required="true" /></td> 
+					<td></td>
+	            </tr>
+	            <tr>
+	               <td class="form-label" style="width: 150px;">昵称(5-25位):<span style="color: red">*</span></td>
+				   <td style="width: 350px"><input name="name" id="name" class="mini-textbox" style="width: 200px" required="true" /></td>
+				   <td></td>
+	            </tr>
+	            <tr>
+	               <td class="form-label" style="width: 150px;">密码(6-20位):<span style="color: red">*</span></td>
+				   <td style="width: 350px"><input name="password" id="password" class="mini-password" style="width: 200px" required="true" /></td> 
+				   <td></td>
+	            </tr>
+	            <tr>
+	               <td class="form-label" style="width: 150px;">密码确认(6-20位):<span style="color: red">*</span></td>
+				   <td style="width: 350px"><input name="passwordAg" id="passwordAg"class="mini-password" style="width: 200px" required="true" /></td> 
+				   <td></td>
+	            </tr>
+	             
+	             <tr>
+	                <td class="form-label" style="width: 150px;">锁定:</td>
+					<td style="width: 350px"><input name='status' id="status" class="mini-combobox"  style="width: 120px;" onenter="onKeyEnter" textField="text"  valueField="id" allowInput="false"/></td>
+					<td></td>
+	            </tr>
+	             <tr>
+	               <td class="form-label" style="width: 150px;">邮箱：</td>
+					<td style="width: 350px">
+					<input name="email" id="email"class="mini-textbox" style="width: 200px" vtype="email"/>&nbsp;&nbsp;<span style="color: red">邮箱地址</span>
+					</td>
+					<td></td>
+	             </tr> 
+	             
+	             <tr>
+					<td class="form-label" style="width: 150px;">电话：</td>
+					<td ><input name="phone" id="phone" class="mini-textbox" style="width: 200px"  vtype="float" maxLength ="12"/>&nbsp;&nbsp;<span style="color: red">数字,长度小于等于12位</span></td>
+					<td></td>
+				</tr>
+				
+				  <tr>
+					<td class="form-label" style="width: 150px">角色<span style="color: red">*</span></td>
+					<td ><input name="roleId" id="roleId" class="mini-textbox" style="width: 200px" required="true" allowInput="false" onfocus="selectRole"/></td>
+				</tr>
+	            <tr>
+					<td class="form-label" style="width: 150px">CP<span style="color: red">*</span></td>
+					<td ><input name="masterCpId" id="masterCpId" class="mini-textbox" style="width: 200px" required="true" allowInput="false" onfocus="makeMasterCp"/></td>
+					<td></td>
+				</tr>
+	    		 <tr>
+					<td class="form-label" style="width: 150px">分类</td>
+					<td ><input name="categoryId" id="categoryId" class="mini-textbox" style="width: 200px" allowInput="false" onfocus="selectCategory1" />
+						 <a class="mini-button" onclick="cancelCategory();" style="width:60px;" >清空</a>
+					</td>
+					
+				</tr>
+				<tr>
+					<td class="form-label" style="width: 150px">平台</span></td>
+					<td ><input name="plat" id="plat" class="mini-textbox" style="width: 200px" allowInput="false" onfocus="selectPlat1"/>
+						 <a class="mini-button" onclick="cancelPlat();" style="width:60px;" >清空</a>
+					</td>
+				</tr>
+	            <tr>
+	                <td></td>
+	                <td align="left" colspan='1'>
+	                    <a class="mini-button" id="submit" onclick="updateRow()" style="width:60px;margin-right:20px;" >提交</a>
+	                    <a class="mini-button" id="cancel" onclick="onCancel" style="width:60px;">取消</a>
+	                </td>
+	            </tr>
+	          
+	        </table>
+	    </div>
+   <!--弹出绑定角色窗口-->
+    <div id="selectRoleWindow" class="mini-window" title="选择角色" style="width:800px;height: 600px; position: absolute; left: 200px; top:200px;display: none;" 
+         showModal="true" allowResize="true" allowDrag="true">
+	    <table class="searchTable" style="width: 100%;">
+			<tr>
+				<td style="width: 80px;">角色名</td>
+				<td>
+					<input id="name" class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSearchRole" /></td>
+				<td colspan="6" style="text-align: center;">
+					<a class="mini-button" iconCls="icon-search" onclick="searchRole">查询</a>
+				</td>
+			</tr>
+		</table>
+        <div class="mini-fit">
+			<div id="roleGrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="true" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center">角色id</div>
+					<div field="name" width="70" headerAlign="center">角色名</div>
+				</div>
+			</div>
+		</div>
+        
+        <div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumitSelectRole" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelWindow(selectRoleWindow)" style="width:60px;">取消</a>
+        </div>
+    </div>
+</div>
+ <!--弹出cp窗口-->
+    <div id="selectMasterCp" class="mini-window" title="选择cp" style="width:800px;height: 600px; position: absolute; left: 200px; top:200px;display: none;" 
+         showModal="true" allowResize="true" allowDrag="true">
+	    <table class="searchTable" style="width: 100%;">
+			<tr>
+				<td style="width: 80px;">CP编号</td>
+				<td>
+					<input id="id" class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td style="width: 80px;">CP名称</td>
+				<td>
+					<input id=name class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td colspan="6" style="text-align: center;">
+					<a class="mini-button" iconCls="icon-search" onclick="searchCp">查询</a>
+				</td>
+			</tr>
+		</table>
+        <div class="mini-fit">
+			<div id="masterCpGrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="false" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center">cpId</div>
+					<div field="name" width="70" headerAlign="center">cp名称</div>
+				</div>
+			</div>
+		</div>
+        
+        <div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumitMasterCp" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelWindow(selectMasterCp)" style="width:60px;">取消</a>
+        </div>
+    </div>
+    
+    <!-- <!-- 弹出可管理cp页面 -->
+    <div id="selectManagerCp" class="mini-window" title="选择可管理cp" style="width:800px;height: 600px; position: absolute; left: 200px; top:200px;display: none;" 
+         showModal="true" allowResize="true" allowDrag="true">
+	    <table class="searchTable" style="width: 100%;">
+			<tr>
+				<td style="width: 80px;">CP编号</td>
+				<td>
+					<input id="id" class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td style="width: 80px;">CP名称</td>
+				<td>
+					<input id=name class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td colspan="6" style="text-align: center;">
+					<a class="mini-button" iconCls="icon-search" onclick="searchManagerCp">查询</a>
+				</td>
+			</tr>
+		</table>
+        <div class="mini-fit">
+			<div id="managerCpGrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="true" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center">id</div>
+					<div field="name" width="70" headerAlign="center">cp名称</div>
+				</div>
+			</div>
+		</div>
+        
+        <div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumitManagerCp" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelWindow(selectManagerCp)" style="width:60px;">取消</a>
+        </div>
+    </div>
+     
+    <!-- 分类窗口 -->
+    <div id="categoryWindow" class="mini-window" title="选择一级分类" style="width:800px;height: 400px; position: absolute; left: 200px; top:200px;display: none;" 
+         smultiSelect="true" howModal="true" allowResize="true" allowDrag="true">
+         
+        <div class="mini-fit">
+			<div id="categorygrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="true" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center" align="center">分类编号</div>
+					<div field="title" width="70" headerAlign="center" align="center">分类名称</div>
+				    </div>
+				</div>
+			</div>
+			<div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumbmitCategory" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelWindow(categoryWindow)" style="width:60px;margin-right:20px;">取消</a>
+       	    </div>
+	</div>
+	
+     <!--选择分类窗口        -->
+      <div id="selectCategoryWindow" class="mini-window" title="分类选择" style="width:200px;height:100px; position: absolute; left: 200px; top:200px;display:none" 
+         showModal="true" allowResize="true" allowDrag="true">
+	  		请选择:<input name='selectCategoryId' id="selectCategoryId" class="mini-combobox"  style="width: 120px;" nullItemText="请选择..." emptyText="请选择..." onvaluechanged="onCategoryChanged"   textField="text"  valueField="id" allowInput="false"/>
+         </div>
+    </div>
+	
+	 <!-- 平台窗口 -->
+    <div id="platWindow" class="mini-window" title="选择平台" style="width:800px;height: 400px; position: absolute; left: 200px; top:200px;display: none;" 
+         smultiSelect="true" howModal="true" allowResize="true" allowDrag="true">
+        <div class="mini-fit">
+			<div id="platGrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="true" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center" align="center">平台值</div>
+					<div field="name" width="70" headerAlign="center" align="center">平台名称</div>
+				    </div>
+				</div>
+			</div>
+			<div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumbmitPlat" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelWindow(platWindow)" style="width:60px;">取消</a>
+       	    </div>
+	</div>
+	
+    <!--选择平台窗口        -->
+    <div id="selectPlatWindow" class="mini-window" title="平台选择" style="width:200px;height:100px; position: absolute; left: 200px; top:200px;display:none" 
+       showModal="true" allowResize="true" allowDrag="true">
+ 		请选择:<input name='selectPlat' id="selectPlat" class="mini-combobox"  style="width: 120px;" nullItemText="请选择..." emptyText="请选择..." onvaluechanged="onPlatChanged"   textField="text"  valueField="id" allowInput="false"/>
+       </div>
+  </div>
+	
+</div>
+
+
+
+<script>
+	mini.parse();
+	//获取userList页面传过来的参数
+	var params = mini.getParams();
+	var Request = new Object();//获取url传递的需求项目id
+	Request = GetRequest();
+	var id = Request['id'];
+    var operate = Request['operate'];
+    
+    var selectCategoryIdText = [{id:"-1",text:"全部分类"},{id:"0",text:"选择分类"}];
+    mini.get('selectCategoryId').setData(selectCategoryIdText);
+    
+    var selectPlatText = [{id:"-1",text:"全部平台"},{id:"0",text:"选择平台"}];
+    mini.get('selectPlat').setData(selectPlatText);
+	
+	//设置锁定状态
+	var statusText = [{id:"1",text:"正常"},{id:"2",text:"锁定"}];
+	mini.get('status').setData(statusText);
+	mini.get('status').setValue("1");
+	
+	//加载角色列表
+	var selectRoleWindow = mini.get("selectRoleWindow");
+	var roleGrid = mini.get("roleGrid");
+	function selectRole(){
+		selectRoleWindow.show();
+		var roleUrl = getContextPath() + '/cms/role/roleList';
+		roleGrid.setPageSize(20);
+		roleGrid.setPageIndex(0);
+		roleGrid.setUrl(roleUrl);
+		roleGrid.load();
+	}
+	
+	//设置角色对话框查询按钮
+	function searchRole() {
+		var name = mini.get("name").getValue();
+		roleGrid.load({
+			name : name,
+			status : status
+		});
+	}
+	//角色对话框提交 
+	function sumitSelectRole(){
+		var roleRows = roleGrid.getSelecteds();
+		if (roleRows.length == 0) {
+			mini.alert("请选择用户绑定的角色","提示");
+			return;
+		}
+		//判断角色类型，不允许用户同时绑定二审，三审角色
+		var roleIds="";
+	   	var platList=[];
+        if (roleRows) {
+           var ids = [];
+           for (var i = 0, l = roleRows.length; i < l; i++) {
+               var r = roleRows[i];        
+               ids.push(r.id);
+               if(r.type==2||r.type==3){
+             	  platList.push(r);
+               }
+           }
+           if(platList.length>1){
+         	  mini.alert('不允许用户同时绑定二审，三审角色，重新绑定角色!','提示');
+         	  return;
+           }
+           roleIds = ids.join(',');
+       }
+	mini.get('roleId').setValue(roleIds);
+	selectRoleWindow.hide();
+	}
+	
+	//加载主Cp列表
+    var selectCpWindow = mini.get("selectMasterCp");
+    var masterCpGrid=mini.get("masterCpGrid");
+    function makeMasterCp(){
+    	selectCpWindow.show();
+    	var mastercpgridUrl=getContextPath() + '/cms/cp/cpList';
+    	masterCpGrid.setPageSize(20);
+    	masterCpGrid.setPageIndex(0);
+    	masterCpGrid.setUrl(mastercpgridUrl);
+    	masterCpGrid.load({spTags:"1,2"});
+    }
+    //主cp对话框窗口查询
+    function searchCp(){
+    	var name = mini.get("name").getValue();
+		var id = mini.get("id").getValue();
+		masterCpGrid.load({
+			name : name,
+			id : id
+		});
+    }
+    //主cp对话框提交
+    function sumitMasterCp(){
+		var cpRows = masterCpGrid.getSelecteds();
+		if (cpRows.length == 0) {
+			mini.alert("请选择用户绑定的cp","提示");
+			return;
+		}
+		var r = cpRows[0];
+		mini.get('masterCpId').setValue(r.id);
+		selectCpWindow.hide();
+	}
+    
+    //分类窗口
+    var categoryWindow = mini.get("categoryWindow");
+    var selectCategoryWindow = mini.get("selectCategoryWindow");
+    var categoryGrid=mini.get("categorygrid");
+    var managerCpId=mini.get("cpId");
+    function selectCategory1(){
+    	//清除combox缓存
+    	mini.get("selectCategoryId").setValue(null);
+    	selectCategoryWindow.show();
+    }
+    
+    function selectCategory(){
+    	var categoryUrl=getContextPath() + '/cms/baseCategory/getFristBaseCategory';
+    	categoryGrid.setPageSize(20);
+    	categoryGrid.setPageIndex(0);
+    	categoryGrid.setUrl(categoryUrl);
+    	categoryGrid.load();
+    	categoryWindow.show(); 
+    }
+    
+    function onCategoryChanged(e){
+    	var value=e.value;
+    	if(value==-1){
+    		mini.get('categoryId').setValue(value);
+    		selectCategoryWindow.hide();
+    	}else{
+    		selectCategory();
+    		selectCategoryWindow.hide();
+    	}
+    }
+    
+    function sumbmitCategory(){
+    	var categoryRows = categoryGrid.getSelecteds();
+		if (categoryRows.length == 0) {
+			categoryWindow.hide();
+			return;
+		}
+		var categoryIds=[];
+        if (categoryRows) {
+           var ids = [];
+           for (var i = 0, l = categoryRows.length; i < l; i++) {
+               var r = categoryRows[i];     
+               if(r.id==-1){
+            	   ids.push(r.id);
+            	   break;
+               }else{
+            	   ids.push(r.id);
+               }
+           }
+           categoryIds = ids.join(',');
+       }
+		mini.get('categoryId').setValue(categoryIds);
+		categoryWindow.hide();
+    }
+    
+    function cancelCategory(){
+    	mini.get('categoryId').setValue("");
+    }
+    
+    
+    //平台窗口
+    var platWindow = mini.get("platWindow");
+    var platGrid=mini.get("platGrid");
+    //平台静态分页填充细节处理
+    function fillData(pageIndex, pageSize, dataResult, grid) {
+        var data = dataResult.data, totalCount = dataResult.total;
+        var arr = [];
+        var start = pageIndex * pageSize, end = start + pageSize;
+        for (var i = start, l = end; i < l; i++) {
+            var record = data[i];
+            if (!record) continue;
+            arr.push(record);
+        }
+        grid.setTotalCount(totalCount);
+        grid.setPageIndex(pageIndex);
+        grid.setPageSize(pageSize);
+        grid.setData(arr);
+    }
+    // 监听平台静态分页前事件，阻止后自行设置当前数据和分页信息
+    platGrid.on("beforeload", function (e) {
+        e.cancel = true;
+        var pageIndex = e.data.pageIndex, pageSize = e.data.pageSize;
+        fillData(pageIndex, pageSize, dataResult, platGrid);
+    });
+    
+    var selectPlatWindow = mini.get("selectPlatWindow");
+    function selectPlat1(){
+    	//清除combox缓存
+    	mini.get("selectPlat").setValue(null);
+    	selectPlatWindow.show();
+    }
+    
+    function onPlatChanged(e){
+    	var value=e.value;
+    	if(value==-1){
+    		mini.get('plat').setValue(value);
+    		selectPlatWindow.hide();
+    	}else{
+    		selectPlat();
+    		selectPlatWindow.hide();
+    	}
+    }
+    
+    function selectPlat(){
+    	// 静态获取平台所有数据和总记录数  ,格式{ total: 100, data: [...] }
+        var dataResult = null;
+        $.ajax({
+            url: '../../../txt/plat.txt',
+            dataType: 'text',
+            async: false,
+            success: function (text) {
+                dataResult = mini.decode(text);
+            }
+        });
+        // 第一次设置
+        fillData(0, platGrid.getPageSize(), dataResult, platGrid);
+        platWindow.show();
+    }
+    
+    
+    function sumbmitPlat(){
+    	var platRows = platGrid.getSelecteds();
+		if (platRows.length == 0) {
+			platWindow.hide();
+			return;
+		}
+		var platIds=[];
+        if (platRows) {
+           var ids = [];
+           for (var i = 0, l = platRows.length; i < l; i++) {
+               var r = platRows[i];  
+               if(r.id==-1){
+            	   ids.push(r.id);
+            	   break;
+               }else{
+            	   ids.push(r.id);
+               }
+           }
+           platIds = ids.join(',');
+       }
+		mini.get('plat').setValue(platIds);
+		platWindow.hide();
+    }
+    
+    function cancelPlat(){
+    	mini.get('plat').setValue("");
+    }
+    
+	//表单提交
+	function updateRow() {
+		var form = new mini.Form("#editform");
+		var o = form.getData();
+		if (check(o))return;
+		form.validate();
+		if (form.isValid() == false)
+			return;
+		var json = mini.encode([ o ]);
+		var roleIds = mini.get("roleId").getValue();
+		if (roleIds == undefined || roleIds == "" || roleIds == null) {
+			mini.alert('用户必须绑定角色', '提示');
+			return;
+		}
+		var masterCp = mini.get("masterCpId").getValue();
+		if (masterCp == undefined || masterCp == "" || masterCp == null) {
+			mini.alert('用户必须绑定CP', '提示');
+			return;
+		}
+		var url = "/user/saveOrEdit";
+		ajaxFunc('post', url, o, function(result) {
+			if (result.code == "0") {
+				mini.alert("提交成功");
+				reloadGrid(window.parent.mini.get("mainTabs1"));
+				CloseWindow("save");
+			} else {
+				mini.alert("提交失败，原因" + result.msg, '提示');
+			}
+		});
+	}
+
+	function check(e) {
+		var name = e.name;
+		var loginName = e.loginName;
+		var password = e.password;
+		var pwdAg = e.passwordAg;
+		var phone = e.phone;
+		if (name == null || name.length<5||name.length>25) {
+			mini.alert("昵称格式错误");
+			return true;
+		}
+		if (loginName != null && loginName.length<5||loginName.length>25) {
+			mini.alert("登录名格式错误");
+			return true;
+		}
+		if (operate != 2) {
+			if (password != null && password.length<6||password.length>20) {
+				mini.alert("密码格式错误");
+				return true;
+			}
+		}
+
+		if (operate != 2) {
+			if (pwdAg != null && pwdAg.length<6||pwdAg.length>20) {
+				mini.alert("密码确认格式错误");
+				return true;
+			}
+		}
+		if (phone.length > 0) {
+			if (!checkTel()) {
+				mini.alert("电话格式错误");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function checkTel() {
+		var isPhone = /^([0-9]{3,4}-)?[0-9]{7,8}$/;
+		var isMob = /^((\+?86)|(\(\+86\)))?(13[012356789][0-9]{8}|15[012356789][0-9]{8}|18[02356789][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
+		var value = mini.get("phone").getValue().trim();
+		if (isMob.test(value) || isPhone.test(value)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	//编辑数据绑定
+	if (id != null && operate == 2) {
+		var form = new mini.Form("#editform");
+		form.clear();
+		//form.loading();
+		var url = '/user/detail?id=' + id;
+		ajaxFunc('post', url, id, function(result) {
+			form.unmask();
+			if (result.code == "0") {
+				var o = mini.decode(result.info);
+				form.setData(o);
+			} else {
+				mini.alert(result.msg, '提示');
+			}
+		});
+	}
+
+	//关闭窗口、tab
+	function onCancel(e) {
+		CloseWindow("cancel");
+	}
+	function CloseWindow(action) {
+		if (action == "close" && form.isChanged()) {
+			if (confirm("数据被修改了，是否先提交？")) {
+				return false;
+			}
+		}
+		if (window.CloseOwnerWindow)
+			return window.CloseOwnerWindow(action);
+		else
+			window.close();
+	}
+
+	function cancelWindow(name) {
+		var window = mini.get(name)
+		window.hide();
+	}
+</script>
+</body>
+</html>

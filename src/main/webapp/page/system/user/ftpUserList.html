@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+        <title>ftp用户管理</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+        <link rel="stylesheet" type="text/css" href="../../../js/css/privilege.css"> 
+        <script type="text/javascript" src="../../../js/boot.js"></script>
+        <script type="text/javascript" src="../../../js/config.js"></script>
+    
+    <style type="text/css">
+        html,body
+        {
+            width:100%;height:100%;border:0;margin:0;padding:0;overflow:visible;
+            min-width:800px;
+        }
+    </style>        
+</head>
+<body>
+    <div id="pathTxt" class="pathTxt">路径：系统管理〉ftp用户管理</div>  
+    <table class="searchTable" style="width:100%; padding:20px 10px">
+        <tr>
+            <td style="width: 40px;">用户名</td>
+            <td style="width: 200px;"><input id="userName" class="mini-textbox"  style="width: 160px;"  onenter="onKeyEnter" /></td>
+             <td style="width: 40px;">状态</td>
+             <td style="width: 210px;"><input id="enableFlag" class="mini-combobox" style="width: 120px;"  onenter="onKeyEnter"  valueField="id" allowInput="false"/></td>
+             <td><a class="mini-button"  iconCls="icon-search"  onclick="search()">查询</a></td>
+        </tr>
+    </table>
+    <div class="mini-toolbar" style="padding:0px;border-top: 0;border-bottom: 0;">
+        <table style="width:100%;">
+            <tr>
+                <td id="privilege_userlist">
+                    <a class="mini-button" plain="true" iconCls="icon-add"   onclick="addUser()">添加</a>
+                    <a class="mini-button" plain="true" iconCls="icon-delete"   onclick="remove()">删除</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mini-fit" >
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:100%;" 
+             idField="id" allowResize="false" multiSelect="true"  pageSize="20" >
+            <div property="columns">
+                <div type="checkcolumn"></div>
+                <div field="userName" width="80" allowSort="false"   headerAlign="center" >用户名</div> 
+                <div field="homeDirectory" width="80" allowSort="false"   headerAlign="center">用户的根目录</div>
+                <div width="80" allowSort="false"   headerAlign="center" renderer="convertWrite" >用户写权限</div> 
+                <div width="120" headerAlign="center"  allowSort="false" renderer="covertUserState" >用户状态</div>
+                <div field="oper1" name="action" width="100" headerAlign="center" align="center" renderer="onActionRenderer" cellStyle="padding:0;">操作</div>
+            </div>
+        </div>  
+    </div>
+    
+    
+    <script type="text/javascript">
+			mini.parse();
+			var grid = mini.get("datagrid1");
+			grid.url = BASEURL + '/ftpUser/getFtpUsers';
+			
+			grid.setPageSize(20);
+			grid.setPageIndex(0);
+			grid.load();
+			var objIds = "";
+			var statusTxt = [{id : "1",text : "正常登录"}, {id : "0",text : "禁止登录"}];
+			mini.get('enableFlag').setData(statusTxt);
+			var params = mini.getParams();
+			
+			//转换用户状态
+			function covertUserState(e){
+				var record = e.record;
+				var stateText;
+				var state = record.enableFlag;
+				if(state == 1){
+					stateText = "可以登录";
+				}else if(state == 0){
+					stateText = "禁止登录";
+				}
+				return stateText;
+			}
+			//写权限转换
+			function convertWrite(e){
+				var record = e.record;
+				var witeText;
+				var write = record.writePermission;
+				if(write == 1){
+					witeText = "用户可以写入";
+				}else if(write == 0){
+					witeText = "用户禁止写入";
+				}
+				return witeText;
+			}
+			
+			// Enter key Linsener
+			function onKeyEnter() {
+				search();
+			}
+			
+			function search() {
+				var userName = mini.get("userName").getValue();
+				var enableFlag = mini.get("enableFlag").getValue();
+	
+				grid.load({
+					userName : userName,
+					enableFlag : enableFlag
+				});
+			}
+	
+			//添加用户
+			 function addUser() {
+		            mini.open({
+		                url: "page/system/user/ftpUserAddOrEdit.html",
+		                title: "添加ftp用户", width: 600, height: 360,
+		                onload: function () {
+		                    var iframe = this.getIFrameEl();
+		                    var data = { action: "new"};
+		                    iframe.contentWindow.SetData(data);
+		                },
+		                ondestroy: function (action) {
+		                    grid.reload();
+		                }
+		            });
+		       }
+			
+			function remove(){
+				var url = BASEURL + '/ftpUser/removeUsers';
+				var rows = grid.getSelecteds();
+				if (rows.length > 0) {
+					mini.confirm("确定删除选中记录？",null,function(action,value){
+						var ids = [];
+	                    for (var i = 0, l = rows.length; i < l; i++) {
+	                        var r = rows[i];
+	                        ids.push(r.userName);
+	                    }
+	                    var id = ids.join(',');
+	                    grid.loading("操作中，请稍后......");
+	                    $.ajax({
+	                        url: url+"?ids=" +id,
+	                        success: function (text) {
+	                            grid.reload();
+	                        },
+	                        error: function () {
+	                        }
+	                  });
+					})
+				}
+			}
+			
+			function onActionRenderer(e) {
+				var grid = e.sender;
+				var record = e.record;
+				var userName = record.userName;
+				var s = ' <a class="Edit_Button" privilege="70303" href="javascript:updateUser(\''+ userName + '\')">编辑</a>';
+				return s;
+			}
+			function updateUser(userName){
+				 mini.open({
+	                url: "page/system/user/ftpUserAddOrEdit.html",
+	                title: "修改ftp用户", width: 600, height: 360,
+	                onload: function () {
+	                    var iframe = this.getIFrameEl();
+	                    var data = { action: "edit","userName":userName,"isUpldate":0};
+	                    iframe.contentWindow.SetData(data);
+	                },
+	                ondestroy: function (action) {
+	                    grid.reload();
+	                }
+	            });
+			}
+			
+			function closeFolderWindows() {
+				folderWindows.hide();
+			}
+	
+		</script>
+    
+</body>
+</html>

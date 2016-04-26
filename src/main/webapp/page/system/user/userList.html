@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+        <title>用户管理</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+        <script type="text/javascript" src="../../../js/boot.js"></script>
+        <script type="text/javascript" src="../../../js/config.js"></script>
+    
+    <style type="text/css">
+        html,body
+        {
+            width:100%;height:100%;border:0;margin:0;padding:0;overflow:visible;
+            min-width:800px;
+        }
+    </style>        
+</head>
+<body>
+    <div id="pathTxt" class="pathTxt">路径：系统管理〉用户管理</div>  
+    <table class="searchTable" style="width:100%;">
+        <tr>
+            <td>昵称:</td><td><input id="name" class="mini-textbox" emptyText="请输入..." style="width: 200px;" onenter="onKeyEnter" /></td>
+            <td>登录名:</td><td> <input id="loginName" class="mini-textbox"  emptyText="请输入..." style="width: 200px;"  onenter="onKeyEnter" /></td>
+            <td>上一次登录时间:</td><td colspan="3"><input id="loginStartTime" showTime="true" class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>
+            <td>  至&nbsp;</td><td><input id="loginEndTime" showTime="true"  class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>
+        </tr>
+        <tr>
+            <td>状态:</td><td><input id="status" class="mini-combobox"  emptyText="请选择..."  style="width: 200px;"  onenter="onKeyEnter"  valueField="id" allowInput="false"/></td>
+            <td >更新时间:</td><td ><input id="updateStartTime" showTime="true" class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/> </td> 
+            <td>  至&nbsp;</td><td ><input id="updateEndTime" showTime="true"  class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/> </td> 
+        </tr>
+        <tr>
+            <td colspan="10" style="text-align:center;">
+                <a class="mini-button"  iconCls="icon-search"  onclick="search()">查询</a>
+            </td>
+        </tr>
+    </table>
+    <div class="mini-toolbar" style="padding:0px;border-top: 0;border-bottom: 0;">
+        <table style="width:100%;">
+            <tr>
+                <td id="privilege_userlist">
+                    <a class="mini-button" plain="true" iconCls="icon-add"   onclick="addUser" id="privilege-70201">添加</a>
+                    <a class="mini-button" plain="true" iconCls="icon-delete"   onclick="delEdit" id="privilege-70202" >删除</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mini-fit" >
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:100%;" 
+             idField="id" allowResize="false" multiSelect="true"  pageSize="20" >
+            <div property="columns">
+                <div type="checkcolumn"></div> 
+                <div field="loginName" width="80" allowSort="false"   headerAlign="center" >登录名</div> 
+                <div field="name" width="80" allowSort="false"   headerAlign="center">昵称</div> 
+                <div field="status" width="50" allowSort="false"   headerAlign="center" renderer="onStatus">状态</div>
+                <div field="lastLoginTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center"  allowSort="false" >上一次登录时间</div> 
+                <div field="creator" width="80" allowSort="false"   headerAlign="center">创建者</div>
+                <div field="updator" width="80" allowSort="false"   headerAlign="center" >更新者</div> 
+                <div field="createTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center"  allowSort="false" >创建时间</div>
+                <div field="updateTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center"  allowSort="false" >更新时间</div>
+                <div field="oper" name="action" width="100" headerAlign="center" align="center" renderer="onActionRenderer" cellStyle="padding:0;">操作</div>     
+            </div>
+        </div>  
+    </div>
+    
+    
+    <script type="text/javascript">
+			mini.parse();
+			var grid = mini.get("datagrid1");
+			grid.url = getContextPath() + '/cms/user/getUserList';
+			grid.load();
+			var objIds = "";
+			var statusTxt = [{id : "-1",text : "全部"}, {id : "1",text : "正常"}, {id : "2",text : "锁定"}];
+			mini.get('status').setData(statusTxt);
+			
+					var params = mini.getParams();
+					function delEdit() {
+						var rows = grid.getSelecteds();
+						if (rows.length < 1) {
+							alert("请选择要删除选项!!");
+							return;
+						}
+						if (rows) {
+							if (confirm("是否确认操作?")) {
+								var ids = [];
+								var names = [];
+								for ( var i = 0, l = rows.length; i < l; i++) {
+									var r = rows[i];
+									if (r.name == 'admin') {
+										alert("超级用户不能删除");
+										return;
+									}
+									ids.push(r.id);
+									names.push(r.name);
+								}
+								var id = ids.join(',');
+								var name = names.join(',');
+								var url ='/user/deleteUsers';
+								var json = '{"names":"' + name + '","ids":"'+ id + '"}';
+								ajaxFunc('post', url, mini.decode(json), function(result) {
+									if (result.code == "0") {
+										alert("删除成功!");
+										grid.reload();
+										return;
+									}else{
+										alert("删除失败，原因：" + result.msg)
+										return;
+									}
+								});
+							}
+						}
+					}
+					
+					function onActionRenderer(e) {
+						var grid = e.sender;
+						var record = e.record;
+						var uid = record._uid;
+						var rowIndex = e.rowIndex;
+						var row = grid.getRowByUID(uid);//获取id
+						var s = ' <a privilege="70203" class="Edit_Button" href="javascript:viewRow(\''
+									+ uid + '\')">编辑</a>';
+						return s;
+					}
+
+					function viewRow(uid) {
+						var row = grid.getRowByUID(uid);
+						if (row) {
+							addTab("用户编辑-" + row.name,"./user/userAddOrEdit.html?operate=2&id="+ row.id);
+						}
+					}
+					function search() {
+						var name = mini.get("name").getValue();
+						var loginName = mini.get("loginName").getValue();
+						var status = mini.get("status").getValue();
+						var loginStartTime = mini.get("loginStartTime")
+								.getValue();
+						var loginEndTime = mini.get("loginEndTime").getValue();
+						var updateStartTime = mini.get("updateStartTime")
+								.getValue();
+						var updateEndTime = mini.get("updateEndTime")
+								.getValue();
+						var loginStartTimeStr = mini.formatDate(loginStartTime,
+								"yyyy-MM-dd HH:mm:ss");
+						var loginEndTimeStr = mini.formatDate(loginEndTime,
+								"yyyy-MM-dd HH:mm:ss");
+						var updateStartTimeStr = mini.formatDate(
+								updateStartTime, "yyyy-MM-dd HH:mm:ss");
+						var updateEndTimeStr = mini.formatDate(updateEndTime,
+								"yyyy-MM-dd HH:mm:ss");
+
+						grid.load({
+							name : name,
+							loginName : loginName,
+							status : status,
+							loginStartTime : loginStartTimeStr,
+							loginEndTime : loginEndTimeStr,
+							updateStartTime : updateStartTimeStr,
+							updateEndTime : updateEndTimeStr
+						});
+					}
+
+					function addUser() {
+						addTab("添加用户", "./user/userAddOrEdit.html?operate=1");
+					}
+
+					function onStatus(e) {
+						var record = e.record;
+						if (record.status == 2)
+							return '<span style="color:red;">锁定</span>';
+						if (record.status == 1)
+							return '<span style="color:green;">正常</span>';
+					}
+
+					function closeFolderWindows() {
+						folderWindows.hide();
+					}
+					
+					function onKeyEnter(){
+						search();
+					}
+
+			</script>
+	</body>
+</html>

@@ -1,0 +1,147 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>CMS系统管理</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="../../css/system.css">
+<script type="text/javascript" src="../../js/boot.js"></script>
+<style type="text/css">
+html,body {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+}
+</style>
+</head>
+
+<body>
+	<div id="layout1" class="mini-layout" style="width: 100%; height: 100%">
+		<div id="70100" title="系统管理" showHeader="true" region="west"
+			width="180" maxWidth="250" minWidth="100">
+			<ul id="privilege-tree1" class="mini-tree"
+				style="width: 160px; padding: 5px;" showTreeIcon="true"
+				textField="text" idField="id" parentField="pid" iconField="iconCls"
+				resultAsTree="false" onnodeclick="onNodeSelect"
+				expandOnNodeClick="true">
+
+			</ul>
+		</div>
+		<div title="center" region="center" bodyStyle="overflow:hidden;"
+			style="border: none;">
+			<!--Tabs-->
+			<div id="mainTabs1" class="mini-tabs" activeIndex="0"
+				style="width: 100%; height: 100%;" contextMenu="#tabsMenu"
+				maskOnLoad="false" onbeforeactivechanged="onBeforeactivechanged"
+				ontabdestroy="onTabdestroy"></div>
+		</div>
+	</div>
+
+	<ul id="tabsMenu" class="mini-contextmenu" onbeforeopen="onBeforeOpen">
+		<li onclick="closeTab">关闭标签页</li>
+		<li onclick="closeAllBut">关闭其他标签页</li>
+		<li onclick="closeAll">关闭所有标签页</li>
+	</ul>
+
+	<script type="text/javascript">
+    				mini.parse();
+				    var list = [ 
+              		{id: "privilege-70500", name: "系统管理",text : "系统管理",},
+				    {id: "privilege-70100",iconCls : "icon-ashung-people",text : "用户管理",pid: "privilege-70500",url : "user/userList.html"},
+				    {id: "privilege-70200",iconCls : "icon-ashung-friend",text : "角色管理",pid: "privilege-70500",url : "role/roleList.html"},
+				    {id: "privilege-70300",iconCls : "icon-ashung-friend",text : "CP管理",pid: "privilege-70500",url : "cp/cpList.html"},
+				    {id: "privilege-70400",iconCls : "icon-ashung-friend",text : "ftp管理",pid: "privilege-70500",url : "user/ftpUserList.html"}
+					];
+				    var tree1 = mini.get("privilege-tree1");
+					tree1.loadList(list, "id", "pid");
+
+					var priviligeTreeUrl ="/role/getAllPrivilege";
+					var priviligeTreeList = [];
+					getPriviligeTreeList();//获取角色权限列表
+
+					//tabs右键菜单
+					var tabs = mini.get("mainTabs1");
+					var lastTab = null;
+					var currentTab = null;
+					function onBeforeOpen(e) {
+						currentTab = tabs.getTabByEvent(e.htmlEvent);
+						if (!currentTab) {
+							e.cancel = true;
+						}
+					}
+
+					function getTabs(id) {
+						var tabs = mini.get(id);
+						return tabs;
+					}
+
+					function showTab(node) {
+						var len = tabs.getTabs().length;
+
+						if (len < MAX_TAB_NUMS) { //最多MAX_TAB_NUMS个tab
+							var id = "tab$" + node.id;
+							var tab = tabs.getTab(id);
+							if (!tab) {
+								lastTab = tabs.getActiveTab();
+
+								tab = {};
+								tab._nodeid = node.id;
+								tab.name = id;
+								tab.title = node.text;
+								tab.showCloseButton = true;
+								//这里拼接了url，实际项目，应该从后台直接获得完整的url地址
+								tab.url = node.url;
+								tabs.addTab(tab);
+							}
+							tabs.activeTab(tab);
+						} else {
+							alert("最多同时打开"+MAX_TAB_NUMS+"个页面，请先关闭个别页面");
+						}
+					}
+
+					function onNodeSelect(e) {
+						var node = e.node;
+						var isLeaf = e.isLeaf;
+
+						if (isLeaf) {
+							showTab(node);
+						}
+					}
+
+					//////销毁tab方法
+					function setLastTab(tab) {
+						lastTab = tab;
+					}
+					function onTabdestroy(e) { //tab内容页面销毁时激发,仅发生一次回转到之前的tab
+						if (lastTab) {
+							tabs.activeTab(lastTab);
+						}
+						lastTab = null;
+					}
+					function onBeforeactivechanged(e) { //面板切换前发生
+						lastTab = tabs.getActiveTab();
+					}
+
+					function getPriviligeTreeList() {
+						//加载权限树
+						if (!priviligeTreeList || priviligeTreeList.length < 1) {
+							ajaxFunc('post', priviligeTreeUrl, null, function(result) {
+								if (result.code == 0) {
+									if (result.info != null) {
+										priviligeTreeList = result.info;
+									}
+								}
+							});
+						}
+						return priviligeTreeList;
+					}
+
+		</script>
+	</body>
+</html>

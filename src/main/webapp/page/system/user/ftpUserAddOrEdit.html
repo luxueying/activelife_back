@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>用户编辑</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+        <script type="text/javascript" src="../../../js/boot.js"></script>
+    	<script type="text/javascript" src="../../../js/tool.js"></script>
+    	<script type="text/javascript" src="../../../js/config.js"></script>
+ </link>
+ </head>
+ <body>   
+<div style="padding-left:11px;padding-bottom:5px;">
+    <div id="editform" class="form" >
+        <input class="mini-hidden" name="isUpldate" id="isUpldate"/>
+        <table style="width:100%;">
+              <tr>
+                 <td class="form-label" style="width: 150px;">用户名(5-25位):<span style="color: red">*</span></td>
+				<td style="width: 350px"><input name="userName" id="userName"
+					class="mini-textbox" style="width: 200px" required="true" /></td> 
+            </tr>
+             <tr>
+                 <td class="form-label" style="width: 150px;">密码(6-20位):<span
+					style="color: red">*</span></td>
+				<td style="width: 350px"><input name="userPassword" id="userPassword"
+					class="mini-password" style="width: 200px" required="true" /></td> 
+            </tr>
+            <tr>
+                 <td class="form-label" style="width: 150px;">密码确认(6-20位):<span
+					style="color: red">*</span></td>
+				<td style="width: 350px"><input name="passwordAg" id="passwordAg"
+					class="mini-password" style="width: 200px" required="true" /></td> 
+            </tr>
+            <tr>
+               <td class="form-label" style="width: 150px;">用户根目录(对应的cp编号):<span
+					style="color: red">*</span></td>
+				<td style="width: 350px"><input name="homeDirectory" id="homeDirectory"
+					class="mini-textbox" style="width: 200px" required="true" /></td>
+             </tr>
+             <tr>
+                 <td class="form-label" style="width: 200px;">对目录的权限:</td>
+				 <td style="width: 350px"><input name='writePermission' id="writePermission" class="mini-combobox"  style="width: 200px;" 
+				  textField="text"  valueField="id" allowInput="false"/></td>
+            </tr>
+            
+             <tr>
+                 <td class="form-label" style="width: 200px;">用户状态:</td>
+				 <td style="width: 350px"><input name='enableFlag' id="enableFlag" class="mini-combobox"  style="width: 200px;" 
+				 textField="text"  valueField="id" allowInput="false"/></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="left" colspan='1'>
+                    <a class="mini-button" id="submit" onclick="updateRow()" style="width:60px;margin-right:20px;" >提交</a>
+                    <a class="mini-button" id="cancel" onclick="onCancel" style="width:60px;">取消</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+ 
+	
+
+<script type="text/javascript">
+    mini.parse();
+	var params = mini.getParams();
+    
+    var statusText = [{id:"1",text:"正常登录"},{id:"0",text:"禁止登录"}];
+    mini.get('enableFlag').setData(statusText);
+    mini.get('enableFlag').setValue("1");
+    
+    var writeText = [{id:"1",text:"可以写入数据"},{id:"0",text:"禁止写入数据"}];
+  	mini.get("writePermission").setData(writeText);
+  	mini.get("writePermission").setValue("1");
+    
+    function updateRow(){
+        var form = new mini.Form("#editform");
+        var o = form.getData();
+        //检测输入值
+         if(check(o))  return;
+        form.validate();
+        if (form.isValid() == false) return;
+
+        var json = mini.encode([o]);
+        
+        var url = "/ftpUser/saveFtpUser";
+        
+        ajaxFuncSync('post',url,o,function(info){
+			if(info.code== 0){
+         	     CloseWindow("save");
+         	}else{
+         		mini.alert("提交失败，原因"+info.msg,'提示');
+         	}
+         });
+    }
+
+    function check(e){
+        var userName=e.userName;
+        var userPassword=e.userPassword;
+        var homeDirectory=e.homeDirectory;
+        var pwdAg=e.passwordAg;
+
+        if(userName == null || userName.length<5 ||userName.length>25){
+        	mini.alert("登录名格式错误");
+            return true;
+         }
+        if(userPassword ==null || userPassword.length<6 || userPassword.length>20){
+        	mini.alert("密码格式错误");
+            return true;
+         }
+        if(userPassword != pwdAg){
+        	mini.alert("两次输入的密码不一致");
+             return true;
+        }
+        if(homeDirectory==null || homeDirectory == ''){
+        	mini.alert("用户根路径为空");
+            return true;
+        }
+        if(homeDirectory.split("\/").length == 3){
+        	mini.alert("用户根路径只能有一层目录，为对应cp的编号");
+            return true;
+        }
+        return false;   
+     }
+    
+    
+    function onCancel(e) {
+            CloseWindow("cancel");
+    }
+    
+    function CloseWindow(action) {            
+        if (action == "close" && form.isChanged()) {
+            if (confirm("数据被修改了，是否先提交？")) {
+                return false;
+            }
+        }
+        if (window.CloseOwnerWindow) return window.CloseOwnerWindow(action);
+        else window.close();            
+    }
+    
+    function SetData(data) {
+        if (data.action == "edit") {
+        	 var form = new mini.Form("#editform");
+        	 data = mini.clone(data);
+        	 var userName = data.userName;
+        	 var isUpldate=data.isUpldate;
+        	 mini.get('isUpldate').setValue(isUpldate);
+        	 var url = BASEURL+"/ftpUser/getFtpUserByUserName";
+        	 $.ajax({
+                 url: url+"?userName=" + data.userName,
+                 cache: false,
+                 success: function (text) {
+                     var o = mini.decode(text);
+                     mini.get('userName').setValue(o.userName);
+                     mini.get('passwordAg').setValue(o.userPassword);
+                     mini.get('userPassword').setValue(o.userPassword);
+                     mini.get('homeDirectory').setValue(o.homeDirectory);
+                     mini.get('enableFlag').setValue(o.writePermission);
+                     mini.get("writePermission").setValue(o.enableFlag);
+                     mini.get('userName').setEnabled(false);
+                     form.setChanged(false);
+
+                     onDeptChanged();
+                     mini.getbyName("position").setValue(o.position);
+                 }
+             });
+        }
+    }
+
+</script>
+</body>
+</html>

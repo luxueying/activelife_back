@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>CP新增和编辑</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+    <script type="text/javascript" src="../../../js/boot.js"></script>
+ </link>
+ </head>
+ <body>   
+ 
+ <div style="padding-left:11px; padding-bottom:5px;">
+		<table id="editform" class="form-table" border="0" cellpadding="1"
+			cellspacing="2">
+			<tr >
+				<td  class="form-label" style="width: 150px;">CP编号<span
+					style="color: red">*</span></td>
+				<td ><input name="id" id="id"
+					class="mini-textbox" style="width: 200px"  vtype="float"  required="true"/></td>
+			</tr>
+			<tr>
+				<td class="form-label" style="width: 150px;">CP名称：<span
+					style="color: red">*</span></td>
+				<td ><input name="name" id="name"
+					class="mini-textbox" style="width: 200px" required="true" /></td>
+			</tr>
+			
+			<tr>
+				<td class="form-label" style="width: 150px;">状态<span
+					style="color: red">*</span></td>
+				<td >
+            		<input name="status" id="status" class="mini-combobox"  style="width:200px" required="true" />
+                </td>
+			</tr>
+			
+			<tr>
+				<td class="form-label" style="width: 150px;">电话：</td>
+				<td ><input name="phone" id="phone"
+					class="mini-textbox" style="width: 200px"  vtype="float"/>&nbsp;&nbsp;<span style="color: red">必须是数字,长度小于等于12位</span></td>
+			</tr>
+			
+              
+            <tr>
+               <td class="form-label" style="width: 150px;">邮箱：</td>
+				<td style="width: 350px">
+				<input name="email" id="email"class="mini-textbox" style="width: 200px" vtype="email"/>&nbsp;&nbsp;<span style="color: red">必须是邮箱地址</span>
+				</td>
+              </tr> 
+               
+            <tr>
+               <td class="form-label" style="width: 150px;">公司名称：</td>
+				<td style="width: 350px">
+				<input name="company" id="company"class="mini-textbox" style="width: 200px"/>
+				</td>
+              </tr> 
+    	   
+    	   <!--  <tr>
+				<td class="form-label" style="width: 150px;">是否免审:</td>
+				<td >
+				<div id="noCheckTag" name="noCheckTag" class="mini-radiobuttonlist"  textField="text" valueField="id"  required="true"
+				value="2"></div>
+				</td>
+			</tr> -->
+			
+			<tr>
+				<td class="form-label" style="width: 150px;">SP标志:</td>
+				<td >
+				<div id="spTag" name="spTag" class="mini-radiobuttonlist"  textField="text" valueField="id"  required="true"
+				value="2"></div>
+				</td>
+			</tr>
+			
+			<tr>
+				<td class="form-label" style="width: 150px;">来源:</td>
+				<td>
+				<input name="source" id="source"  textField="text" valueField="id" emptyText="请选择..." class="mini-combobox" style="width:150px" required="true" />
+				</td>
+			</tr>
+			
+			 <tr>
+        		<td class="form-label" style="width:150px;">描述:</td>
+        		<td ><input name="description" id="description" class="mini-textarea"  style="width:400px;height:100px;" required="false" /></td>
+    	  	  </tr>
+              
+              <tr>
+               <td align="left">平台：</td>
+				<td >
+				<div id="4"  class="mini-checkbox"  readOnly="false" text="TV" onvaluechanged="onValueChanged"></div>
+				<div id="32"  class="mini-checkbox"  readOnly="false" text="手机" onvaluechanged="onValueChanged"></div>
+				</td>
+              </tr>  
+              
+             
+              <tr>
+              	<td>SP设置:</td>
+              	<td>
+              	 <div id="spGrid" class="mini-datagrid"
+					style="width: 50%; height: 200px;"
+					idField="id" pageSize="500" allowResize="false"
+					 multiSelect="true" showPager="false">
+					<div property="columns">
+			                <div name="plat" field="plat" width="100" allowSort="false"   headerAlign="center" align="center" renderer="onPlat">平台</div>
+			                <div name="id" field="id" width="200" allowSort="false"   headerAlign="center" align="center">SPID</div>
+			                <div name="name" field="name" width="200" allowSort="false"   headerAlign="center" align="center">SP名称</div>
+					</div>
+ 				</div>
+              	</td>
+              </tr>
+		    
+			<tr>
+				<td></td>
+				<td><a class="mini-button" onclick="submitCp()"
+					style="width: 60px; margin-right: 20px;" id="submit">提交</a> 
+					<a class="mini-button" onclick="onCancel" style="width: 60px;">取消</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+<!--弹出绑定SP窗口-->
+    <div id="selectSpWindow" class="mini-window" title="选择SP" style="width:800px;height: 600px; position: absolute; left: 200px; top:200px;display: none;" 
+         showModal="true" allowResize="true" allowDrag="true">
+	    <table class="searchTable" style="width: 100%;">
+			<tr>
+				<td style="width: 80px;">SP编号</td>
+				<td>
+					<input id="id" class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td style="width: 80px;">SP名称</td>
+				<td>
+					<input id="cpTitle" class="mini-textbox" emptyText="请输入"
+						style="width: 150px;" onenter="onSpKeyEnter" /></td>
+				<td colspan="6" style="text-align: center;">
+					<a class="mini-button" iconCls="icon-search" onclick="searchSp">查询</a>
+				</td>
+			</tr>
+		</table>
+        <div class="mini-fit">
+			<div id="cpgrid" class="mini-datagrid"
+				style="width: 100%; height: 100%;" idField="id" allowResize="false"
+				multiSelect="false" pageSize="20">
+				<div property="columns">
+					<div type="checkcolumn"></div>
+					<div field="id" width="70"  headerAlign="center" align="center">SP编号</div>
+					<div field="name" width="70" headerAlign="center" align="center">SP名称</div>
+				</div>
+			</div>
+		</div>
+        
+        <div  style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button" onclick="sumitSelectSP" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button" onclick="cancelSelectSP" style="width:60px;">取消</a>
+        </div>
+    </div>
+
+<script type="text/javascript">
+    mini.parse();
+	var params = mini.getParams();
+	
+	var Request = new Object();//获取url传递的需求项目id
+	Request = GetRequest();
+	var id = Request['id'];
+	var operate = Request['operate'];
+	
+    var statusText = [{id:"1",text:"正常"},{id:"2",text:"锁定"}];
+    mini.get('status').setData(statusText);
+    mini.get('status').setValue("1");  
+/*     var noCheckTagText = [{id:"0",text:"否"},{id:"1",text:"是"}];
+    mini.get('noCheckTag').setData(noCheckTagText);
+    mini.get('noCheckTag').setValue("0"); */
+    var spTagText = [{id:"1",text:"CP"},{id:"2",text:"SP"}];
+    mini.get('spTag').setData(spTagText);
+    mini.get('spTag').setValue("1");
+    var sourceText = [{id:"0",text:"新建"},{id:"1",text:"节目库"}];
+    mini.get("source").setData(sourceText); 
+    
+  //编辑时获取cp绑定的sp
+     if(operate==2){
+    	var cpHasSpUrl='/cp/cpGetSp?id='+id;
+    	var spgrid = mini.get("spGrid");
+    	spgrid.url='/cp/cpGetSp?id='+id
+    	ajaxFunc('post',spgrid.url,null,function(result){
+    		for(var j=0;j<result.total;j++){
+    			var newRow = {id:result.data[j].id,plat : result.data[j].plat, spId: result.data[j].spId,name:result.data[j].name};
+    			spgrid.addRow(newRow, 0);
+    			spgrid.selectAll();
+    			if(result.data[j].plat==1){
+    				mini.get("1").setChecked(true);
+    			}else if(result.data[j].plat==4){
+    				mini.get("4").setChecked(true);
+    			}else if(result.data[j].plat==32){
+    				mini.get("32").setChecked(true);
+    			}
+    		}
+        });
+    
+    }
+    
+  //编辑cp
+	if(id != null && operate==2 ){
+		var form = new mini.Form("#editform");
+		form.clear();
+		form.loading();
+        var url = '/cp/cpDetail?id=' + id;
+        ajaxFunc('get',url,null,function(result){
+        	form.unmask();
+        	if(result.code == 0){
+        		form.setData(result.info);
+        	}else{
+        		mini.alert(msg,'提示');
+        	}
+        });
+	}
+  
+  if(operate==2){
+	  //编辑时，设置cp编号输入框为只读
+	  var form = new mini.Form("#editform");
+	  var fields = form.getFields();   
+	  var c = fields[0];
+	  if (c.setReadOnly) c.setReadOnly(true);
+  }
+  
+    
+    var tempPlat;
+    var tempId;
+    var cpid;
+    var cpgrid = mini.get("cpgrid");
+    var spGrid=mini.get("spGrid");
+    var selectSpWindow = mini.get("selectSpWindow");
+    function  onValueChanged(e){
+    	 tempPlat=this.text;
+    	 tempId=this.id;
+    	 cpid=mini.get("cpid");
+    	 var checked = this.getChecked();
+        if(checked){
+        	selectSpWindow.show();
+        	var cpgridUrl=getContextPath() + '/cms/cp/cpList';
+        	cpgrid.setPageSize(20);
+        	cpgrid.setPageIndex(0);
+        	cpgrid.setUrl(cpgridUrl);
+        	cpgrid.load({spTags:"2"});
+        	
+       }else{
+            var rows = spGrid.getSelecteds();
+            if (rows.length > 0) {
+            	for(var i=0;i<rows.length;i++){
+            		if(rows[i].plat==tempPlat||tempId==rows[i].plat){
+            			//删除指定行
+            			spGrid.removeRow(rows[i], true);
+            		}
+            	}
+            }
+        }
+    }
+    
+    //sp查询
+    function onSpEnter(){
+		searchCategory();
+    }
+    function searchSp(){
+		var cpId = $.trim(mini.get("id").getValue());
+		var name = $.trim(mini.get("cpTitle").getValue());
+		var json = {id : cpId, name : name,spTags:"2"};
+		cpgrid.load(json);
+	}
+    
+    function sumitSelectSP (){
+    	var rows = cpgrid.getSelecteds();
+		if (rows.length == 0) {
+			mini.alert("请选择平台对应的sp","提示");
+			return;
+		}
+		var newRow = {id:rows[0].id,plat : tempId,name:rows[0].name};
+		spGrid.addRow(newRow, 0);
+		spGrid.selectAll();
+		selectSpWindow.hide();
+    }
+    
+    var form=new mini.Form("#editform");
+    var saveUrl="";
+    function submitCp(){
+    	form.validate();
+    	if (form.isValid() == false) return;
+    	var data=form.getData();
+    	if (check(data))return;
+    	var rowselected = spGrid.getSelecteds();
+    	if(rowselected.length<=0){
+    		mini.alert("cp必须绑定sp!");
+    		return;
+    	}
+    	
+    	var plats="";
+    	var spIds="";
+    	for(var i=0;i<rowselected.length;i++){
+    		if(rowselected[i].plat=="PC"||rowselected[i].plat==1){
+    			plats=plats+1+",";
+    		}else if(rowselected[i].plat=="TV"||rowselected[i].plat==4){
+    			plats=plats+4+",";
+    		}else if(rowselected[i].plat=="手机"||rowselected[i].plat==32){
+    			plats=plats+32+",";
+    		}
+    		spIds=spIds+rowselected[i].id+",";
+    	}
+    	data.plats=plats;
+    	data.spIds=spIds;
+    	data.operate=operate;
+    	var json = mini.encode([data]);
+       	saveUrl='/cp/saveOrEdit'
+       	ajaxFunc('post',saveUrl,data,function(result){
+        	if(result.code == 0){
+        		mini.alert("保存成功!");
+        		reloadGrid(window.parent.mini.get("mainTabs1"));
+				CloseWindow("close");
+        	}else{
+        		mini.alert("保存失败，原因：" + result.msg)
+				return;
+        	}
+        });
+    }
+    
+    function cancelSelectSP(){
+    	selectSpWindow.hide();
+	}
+    
+    
+     function CloseWindow(action) {
+        if (action == "close" && form.isChanged()) {
+            if (confirm("数据被修改了，是否先提交？")) {
+                return false;
+            }
+        }
+        if (window.CloseOwnerWindow)
+            return window.CloseOwnerWindow(action);
+        else
+            window.close();
+     }
+	
+	function onCancel(e){
+		CloseWindow("close");
+	} 
+	
+	function onPlat(e) {
+		var record = e.record;
+		if (record.plat == 1)
+			return '<span>PC</span>';
+		if (record.plat == 4)
+			return '<span>TV</span>';
+		if (record.plat == 32)
+			return '<span>手机</span>';
+	}
+	
+	function check(e) {
+		var phone = e.phone;
+		if (phone.length > 0) {
+			if (!checkTel()) {
+				mini.alert("电话格式错误");
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//较验电话格式
+	function checkTel() {
+		var isPhone = /^([0-9]{3,4}-)?[0-9]{7,8}$/;
+		var isMob = /^((\+?86)|(\(\+86\)))?(13[012356789][0-9]{8}|15[012356789][0-9]{8}|18[02356789][0-9]{8}|147[0-9]{8}|1349[0-9]{7})$/;
+		var value = mini.get("phone").getValue().trim();
+		if (isMob.test(value) || isPhone.test(value)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+</script>
+</body>
+</html>

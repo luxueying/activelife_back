@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+        <title>CP管理</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+        <script type="text/javascript" src="../../../js/boot.js"></script>
+        <script type="text/javascript" src="../../../js/config.js"></script>
+    
+    <style type="text/css">
+        html,body
+        {
+            width:100%;height:100%;border:0;margin:0;padding:0;overflow:visible;
+            min-width:800px;
+        }
+    </style>        
+</head>
+<body>
+    <div id="pathTxt" class="pathTxt">路径：系统管理〉CP管理</div>  
+    <table class="searchTable" style="width:100%;">
+        <tr>
+            <td>名称:</td><td><input id="name" class="mini-textbox" emptyText="请输入" style="width: 200px;" onenter="onKeyEnter" /></td>
+            <td>状态:</td><td><input id="status" class="mini-combobox"  emptyText="请选择..."  style="width: 200px;"  onenter="onKeyEnter"  valueField="id" allowInput="false"/></td>
+            <td>sp标志:</td><td><input id="sp" class="mini-combobox" emptyText="请输入" style="width: 150px;" onenter="onKeyEnter" multiSelect="true" valueField="id" /></td>
+            <td>同步状态:</td><td><input id="sync" class="mini-combobox"  emptyText="请选择..."  style="width: 200px;"  onenter="onKeyEnter"  valueField="id" allowInput="false"/></td>
+            </tr>
+        <tr>
+            <td>更新时间:</td><td><input id="updateStartTime" showTime="true" class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>
+             <td>至&nbsp;</td><td><input id="updateEndTime" showTime="true"  class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>  
+        </tr>
+        <tr>
+            <td colspan="10" style="text-align:center;">
+                <a class="mini-button"  iconCls="icon-search"  onclick="search()">查询</a>
+            </td>
+        </tr>
+    </table>
+    <div class="mini-toolbar" style="padding:0px;border-top: 0;border-bottom: 0;">
+        <table style="width:100%;">
+            <tr>
+                <td id="privilege_rolelist">
+                    <a class="mini-button" plain="true" iconCls="icon-add"   onclick="addCp" id="privilege-70401">添加</a>
+                    <a class="mini-button" plain="true" iconCls="icon-delete"   onclick="delEdit" id="privilege-70402" >删除</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mini-fit" >
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:100%;" 
+             idField="id" allowResize="false" multiSelect="true"  pageSize="20">
+            <div property="columns">
+                <div type="checkcolumn"></div>
+                <div field="id" width="80" allowSort="false"   headerAlign="center" align="center">CP编号</div>
+                <div field="name" width="80" allowSort="false"   headerAlign="center" align="center">名称</div>  
+                <div field="spTag" width="80" allowSort="false"   headerAlign="center" align="center" renderer="onSpTag">SP标志</div> 
+                <div field="status" width="50" allowSort="false"   headerAlign="center" align="center" renderer="onStatus">状态</div>
+                <div field="synchro" width="80" allowSort="false"   headerAlign="center" align="center" align="center" renderer="onSynchro">同步标志</div> 
+                <div field="source" width="80" allowSort="false"   headerAlign="center" align="center" renderer="onSource">来源</div> 
+                <div field="creator" width="80" allowSort="false"   headerAlign="center" align="center">创建者</div>
+                <div field="updator" width="80" allowSort="false"   headerAlign="center" align="center">更新者</div> 
+                <div field="createTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center" align="center" allowSort="false" >创建时间</div>
+                <div field="updateTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center" align="center" allowSort="false" >更新时间</div>
+                <div field="oper" name="action" width="100" headerAlign="center" align="center" renderer="onActionRenderer" cellStyle="padding:0;">操作</div>     
+            </div>
+        </div>  
+    </div>
+    
+    <script type="text/javascript">
+					mini.parse();
+					var params = mini.getParams();
+					var grid = mini.get("datagrid1");
+					grid.url = getContextPath() + '/cms/cp/cpList';
+					grid.load();
+									
+					var statusTxt = [ {id : "-1",text : "全部"}, {id : "1",text : "正常"}, {id : "2",text : "锁定"} ];
+					mini.get('status').setData(statusTxt);
+					var spTxt =  [  {id : "1",text : "CP"}, {id : "2",text : "SP"}];
+					mini.get('sp').setData(spTxt);
+					var syncTxt = [  {id : "0",text : "没有同步"},{id : "1",text : "已同步"}, {id : "2",text : "同步失败"}];
+					mini.get('sync').setData(syncTxt);
+					
+					function delEdit() {
+						var rows = grid.getSelecteds();
+						if (rows.length < 1) {
+							alert("请选择要删除选项!!");
+							return;
+						}
+						if (rows) {
+							if (confirm("是否确认操作?")) {
+								var ids = [];
+								var names = [];
+								for ( var i = 0, l = rows.length; i < l; i++) {
+									var r = rows[i];
+									ids.push(r.id);
+								}
+								var id = ids.join(',');
+								var url ='/cp/CpDeletes';
+								var json = '{"ids":"' + id + '"}';
+								
+								ajaxFunc('post', url, mini.decode(json), function(result) {
+									if (result.code == "0") {
+										mini.alert("删除成功!");
+										grid.reload();
+										return;
+									}else{
+										mini.alert("删除失败，原因：" + result.msg)
+										return;
+									}
+
+								});
+							}
+						}
+					}
+					
+					function onActionRenderer(e) {
+						var grid = e.sender;
+			            var record = e.record;
+			            var uid = record._uid;
+			            var rowIndex = e.rowIndex;
+			            var row = grid.getRowByUID(uid);//获取id
+			            var s =' <a privilege="70403" class="Edit_Button"  href="javascript:editRow(\'' + uid + '\')">编辑</a>';
+			            return s;
+					}
+					
+					function editRow(uid) {
+						var row = grid.getRowByUID(uid);
+						if (row) {
+							addTab("CP编辑-" + row.name,"cp/cpAddOrEdit.html?operate=2&id=" + row.id);
+						}
+					}
+					
+					function onKeyEnter() {
+						search();
+					}
+					function search() {
+						var name = mini.get("name").getValue();
+						var status = mini.get("status").getValue();
+						var spTags=mini.get("sp").getValue();
+						var synchro=mini.get("sync").getValue();
+						var updateStartTime = mini.get("updateStartTime")
+								.getValue();
+						var updateEndTime = mini.get("updateEndTime")
+								.getValue();
+						var updateStartTimeStr = mini.formatDate(
+								updateStartTime, "yyyy-MM-dd HH:mm:ss");
+						var updateEndTimeStr = mini.formatDate(updateEndTime,
+								"yyyy-MM-dd HH:mm:ss");
+
+						grid.load({
+							name : name,
+							status : status,
+							spTags:spTags,
+							synchro:synchro,
+							updateStartTime : updateStartTimeStr,
+							updateEndTime : updateEndTimeStr
+						});
+					}
+
+					function addCp() {
+						addTab("添加CP", "cp/cpAddOrEdit.html?operate=1");
+					}
+
+					
+					function onStatus(e) {
+						var record = e.record;
+						if (record.status == 2)
+							return '<span style="color:red;">锁定</span>';
+						if (record.status == 1)
+							return '<span style="color:green;">正常</span>';
+					}
+					
+					function onSpTag(e) {
+						var record = e.record;
+						if (record.spTag ==1)
+							return '<span >CP</span>';
+						if (record.spTag == 2)
+							return '<span >SP</span>';
+					}
+					
+					function onSource(e) {
+						var record = e.record;
+						if (record.source ==0)
+							return '<span >新建</span>';
+						if (record.source == 1)
+							return '<span >节目库</span>';
+					}
+					function onSynchro(e) {
+						var record = e.record;
+						if (record.synchro ==0)
+							return '<span >没有同步</span>';
+						if (record.synchro == 1)
+							return '<span >已同步</span>';
+						if (record.synchro == 2)
+							return '<span style="color:red;" >同步失败</span>';
+					}
+
+		</script>
+	</body>
+</html>

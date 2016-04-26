@@ -1,0 +1,339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+        <title>用户管理</title>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../../../css/system.css">
+        <script type="text/javascript" src="../../../js/boot.js"></script>
+        <script type="text/javascript" src="../../../js/config.js"></script>
+    
+    <style type="text/css">
+        html,body
+        {
+            width:100%;height:100%;border:0;margin:0;padding:0;overflow:visible;
+            min-width:800px;
+        }
+    </style>        
+</head>
+<body>
+    <div id="pathTxt" class="pathTxt">路径：系统管理〉角色管理</div>  
+    <table class="searchTable" style="width:100%;">
+        <tr>
+            <td>名称:</td><td><input id="name" class="mini-textbox" emptyText="请输入" style="width: 200px;" onenter="onKeyEnter" /></td>
+            <td>状态:</td><td><input id="status" class="mini-combobox"  emptyText="请选择..."  style="width: 200px;"  onenter="onKeyEnter"  valueField="id" allowInput="false"/></td>
+            <td>更新时间:</td><td><input id="updateStartTime" showTime="true" class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>
+            <td>至&nbsp;</td><td><input id="updateEndTime" showTime="true"  class="mini-datepicker" style="width:200px;" format="yyyy-MM-dd HH:mm:ss" showTime="false" required="false" onenter="onKeyEnter"/></td>
+        </tr>
+        <tr>
+            <td colspan="8" style="text-align:center;">
+                <a class="mini-button"  iconCls="icon-search"  onclick="search()">查询</a>
+            </td>
+        </tr>
+    </table>
+    <div class="mini-toolbar" style="padding:0px;border-top: 0;border-bottom: 0;">
+        <table style="width:100%;">
+            <tr>
+                <td id="privilege_rolelist">
+                    <a class="mini-button" plain="true" iconCls="icon-add"   onclick="addRole" id="privilege-70301">添加</a>
+                    <a class="mini-button" plain="true" iconCls="icon-delete"   onclick="delEdit" id="privilege-70302" >删除</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="mini-fit" >
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:100%;" 
+             idField="id" allowResize="false" multiSelect="true"  pageSize="20">
+            <div property="columns">
+                <div type="checkcolumn"></div>
+                <div field="name" width="80" allowSort="false"   headerAlign="center">角色名</div>  
+                <div field="description" width="200" allowSort="false"   headerAlign="center">角色描述</div>
+                <div field="status" width="50" allowSort="false"   headerAlign="center" renderer="onStatus">状态</div>
+                <div field="creator" width="80" allowSort="false"   headerAlign="center">创建者</div>
+                <div field="updator" width="80" allowSort="false"   headerAlign="center" >更新者</div> 
+                <div field="createTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center"  allowSort="false" >创建时间</div>
+                <div field="updateTime" dateFormat="yyyy-MM-dd HH:mm:ss" width="120" headerAlign="center"  allowSort="false" >更新时间</div>
+                <div field="oper" name="action" width="100" headerAlign="center" align="center" renderer="onActionRenderer" cellStyle="padding:0;">操作</div>     
+            </div>
+        </div>  
+    </div>
+    
+    <!--弹出栏目绑定数据节点窗口        -->
+    <div id="priviligeWindows" class="mini-window" title="权限列表" style="width:350px;height: 400px; position: absolute; left: 200px; top:200px" 
+         showModal="true" allowResize="true" allowDrag="true">
+        <div class="mini-fit">
+            <ul id="priviligeTree" class="mini-tree"  style="width:250px;padding:5px;"  checkRecursive="true" autoCheckParent="true"
+                showTreeIcon="true" textField="name" idField="treeCode" parentField="pCode" showCheckBox="true" allowSelect="false"
+                resultAsTree="false" onnodeclick="onNodeSelect" expandOnNodeClick="false">
+            </ul>
+        </div>
+        <div style="text-align:center;padding-top:0px;padding-bottom:0px;" 
+             borderStyle="border-left:0;border-bottom:0;border-right:0;">
+            <a class="mini-button"  onclick="onSubmitSiteFolders()" style="width:60px;margin-right:20px;" >确定</a>
+            <a class="mini-button"  onclick="closeFolderWindows()" style="width:60px;">取消</a>
+        </div>
+    </div>
+    
+    <script type="text/javascript">
+					mini.parse();
+					var childNodes;
+
+					var grid = mini.get("datagrid1");
+					grid.url = getContextPath() + '/cms/role/roleList';
+					grid.load();
+					var flag=-1;
+					grid.on("drawcell",function(e){
+							var record=e.record;
+							var uid = record._uid;
+							var column=e.column;
+							var field=e.field;
+							var value=e.value;
+							
+							if(field=="name"){
+									if(value=="超级管理员")
+										flag=uid;
+								}
+								if(field=="oper"){
+									if(uid==flag){
+
+										e.cellHtml=' <a class="Edit_Button" privilege="70303"  href="javascript:viewRow(\''
+											+ uid+ '\')">编辑</a>';
+
+									}
+								} 
+							
+						});
+					
+					var objIds = "";
+					var changed;
+					var roleId;
+					var statusTxt = [ {
+						id : "-1",
+						text : "全部"
+					}, {
+						id : "1",
+						text : "正常"
+					}, {
+						id : "2",
+						text : "锁定"
+					} ];
+					mini.get('status').setData(statusTxt);
+					var priviligeWindows = mini.get('priviligeWindows');
+					var priviligeTree = mini.get('priviligeTree');
+					var params = mini.getParams();
+					function delEdit() {
+						
+						var rows = grid.getSelecteds();
+						if (rows.length < 1) {
+							alert("请选择要删除选项!!");
+							return;
+						}
+						if (rows) {
+							if (confirm("是否确认操作?")) {
+								var ids = [];
+								var names = [];
+								for ( var i = 0, l = rows.length; i < l; i++) {
+									var r = rows[i];
+									ids.push(r.id);
+								}
+								var id = ids.join(',');
+								
+								var url = '/role/roleDeletes';
+								var json = '{"ids":"' + id + '"}';
+								
+								ajaxFunc('post', url, mini.decode(json), function(result) {
+									if (result.code == "0") {
+										alert("删除成功!");
+										grid.reload();
+										return;
+									}else{
+										alert("删除失败，原因：" + result.msg)
+										return;
+									}
+
+								});
+							}
+						}
+					}
+					
+					function onActionRenderer(e) {
+						var grid = e.sender;
+			            var record = e.record;
+			            var uid = record._uid;
+			            var rowIndex = e.rowIndex;
+			            var row = grid.getRowByUID(uid);//获取id
+			            var s = ' <a class="Edit_Button" privilege="70303"  href="javascript:viewRow(\'' + uid + '\')">编辑&nbsp;</a>'
+			                   + '&nbsp;&nbsp;<a class="Edit_Button" privilege="70304" href="javascript:editPri(\'' + uid + '\')">权限</a>';
+			            return s
+						
+					}
+					
+					function viewRow(uid) {
+						var row = grid.getRowByUID(uid);
+						if (row) {
+							addTab("角色编辑-" + row.name,
+									"./role/roleEdit.html?id=" + row.id);
+						}
+					}
+                                        
+					function editPri(uid) {
+						var row = grid.getRowByUID(uid);
+						addTab("权限编辑--" + row.name,"./role/privilegeList.html?id=" + row.id);
+					}
+                                        
+					function search() {
+						var name = mini.get("name").getValue();
+						var status = mini.get("status").getValue();
+						var updateStartTime = mini.get("updateStartTime")
+								.getValue();
+						var updateEndTime = mini.get("updateEndTime")
+								.getValue();
+						var updateStartTimeStr = mini.formatDate(
+								updateStartTime, "yyyy-MM-dd HH:mm:ss");
+						var updateEndTimeStr = mini.formatDate(updateEndTime,
+								"yyyy-MM-dd HH:mm:ss");
+
+						grid.load({
+							roleStatus:1,
+							name : name,
+							status : status,
+							updateStartTime : updateStartTimeStr,
+							updateEndTime : updateEndTimeStr
+						});
+					}
+					
+					function onKeyEnter(){
+						search();
+					}
+
+					function addRole() {
+						addTab("添加角色", "./role/roleAdd.html");
+					}
+
+					function onManagerRender(e) {
+						var record = e.record;
+
+						if ((record.isAdmin) == 2) {
+
+							return '<span style="color:red;">否</span>';
+						}
+						if ((record.isAdmin) == 1) {
+
+							return '<span style="color:green;">是</span>';
+						}
+					}
+
+					function onArrangeStatus(e) {
+						var record = e.record;
+						if (record.arrangeStatus == 1)
+							return '<span style="color:blue;">未编排</span>';
+						if (record.arrangeStatus == 2)
+							return '<span style="color:green;">已编排</span>';
+						if (record.arrangeStatus == 3)
+							return '<span style="color:red;">废弃</span>';
+					}
+
+					function onOlineStatusRenderer(e) {
+						var record = e.record;
+						for ( var i = 0; i < onlineStatusTxt.length; i++) {
+							if (record.plat == onlineStatusTxt[i].id)
+								return onlineStatusTxt[i].text;
+						}
+					}
+					function onSubmitSiteFolders() {
+						var treeData = priviligeTree.getCheckedNodes();
+						var ids = [];
+						for ( var i = 0, l = treeData.length; i < l; i++) {
+							var r = treeData[i];
+							ids.push(r.id);
+						}
+						var id = ids.join(',');
+						var url = '/role/editPrivilige';
+						var json = '{"roleId":"' + roleId + '","ids":"' + id
+								+ '"}';
+						ajaxFunc('post', url, mini.decode(json),
+								function(result) {
+									if (result.code == 1) {
+										mini.alert(result.msg);
+										return;
+									}
+									if (result.code == 0) {
+										alert("修改成功!!!");
+										changed = 2;
+										priviligeTree.setUrl(null);
+										reloadGrid(window.parent.mini
+												.get("mainTabs1"));
+										closeFolderWindows();
+									}
+								});
+					}
+					function openFolderWindows() {
+						var rows = grid.getSelecteds();
+						if (rows.length < 1) {
+							alert("请选择要编排的选项!!");
+							return;
+						}
+						if (rows) {
+							var ids = [];
+							for ( var i = 0, l = rows.length; i < l; i++) {
+								var r = rows[i];
+								var objectId = r.liveId + "_" + r.plats
+								ids.push(objectId);
+							}
+							var id = ids.join(',');
+							objIds = id;
+
+						}
+						folderWindows.show();
+					}
+					function onStatus(e) {
+						var record = e.record;
+						if (record.status == 2)
+							return '<span style="color:red;">锁定</span>';
+						if (record.status == 1)
+							return '<span style="color:green;">正常</span>';
+					}
+
+					function closeFolderWindows() {
+						priviligeWindows.hide();
+					}
+
+					//查询子节点
+					function onBeforeExpandFolder(e) {
+						childNodes = priviligeTree.getChildNodes(e.node);
+
+						if (childNodes == 'undefined' || childNodes == null
+								|| childNodes.length <= 0 || changed == 1) {
+							var url = '/role/getChildrenNodes?id=' + e.node.id+ "&roleId=" + roleId;
+							ajaxFunc('get',url,null,function(result) {
+										if (result.code == 1) {
+											alert(result.msg);
+											return;
+										}
+										if (result.info != null && result.info.length > 0) {
+											for ( var i = 0; i < result.info.length; i++) {
+												priviligeTree.addNode(result.info[i],
+														i, e.node);
+												if (result.info[i].status == 1) {
+													priviligeTree
+															.checkNode(result.info[i]);
+												}
+											}
+
+										}
+
+									});
+						}
+					}
+
+					//权限查询
+					//复用，移动---------------------------------------------
+					function priviligeList(e) {
+						priviligeTree.uncheckAllNodes();
+						roleId = e;
+						priviligeWindows.show();
+					}
+		</script>
+	</body>
+</html>
